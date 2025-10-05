@@ -402,6 +402,130 @@ const loadImages = () => {
 // Inicializar carga de imágenes
 window.addEventListener('load', loadImages);
 
+// Configuración de EmailJS
+(function() {
+    // Inicializar EmailJS con tu Public Key
+    emailjs.init("itQESBmnv3bpuxLv1");
+    
+    // Configurar el formulario de contacto
+    const contactForm = document.getElementById('contact-form');
+    
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            // Cambiar estado del botón
+            submitBtn.textContent = 'ENVIANDO...';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+            
+            // Configuración de EmailJS
+            const serviceID = 'service_54pdsnb';
+            const templateID = 'template_yofs06f';
+            
+            // Recopilar datos del formulario
+            const formData = {
+                from_name: contactForm.from_name.value,
+                from_email: contactForm.from_email.value,
+                subject: contactForm.subject.value,
+                message: contactForm.message.value
+            };
+            
+            // Enviar email
+            emailjs.send(serviceID, templateID, formData)
+                .then(function(response) {
+                    console.log('Email enviado exitosamente!', response.status, response.text);
+                    
+                    // Éxito
+                    submitBtn.textContent = 'MENSAJE ENVIADO ✓';
+                    submitBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
+                    submitBtn.style.opacity = '1';
+                    
+                    // Limpiar formulario
+                    contactForm.reset();
+                    
+                    // Mostrar mensaje de éxito
+                    showNotification('¡Mensaje enviado exitosamente! Te contactaré pronto.', 'success');
+                    
+                    // Restaurar botón después de 3 segundos
+                    setTimeout(() => {
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                        submitBtn.style.background = '';
+                    }, 3000);
+                    
+                }, function(error) {
+                    console.log('Error al enviar email:', error);
+                    
+                    // Error
+                    submitBtn.textContent = 'ERROR AL ENVIAR';
+                    submitBtn.style.background = 'linear-gradient(135deg, #ff6b6b, #ff5252)';
+                    submitBtn.style.opacity = '1';
+                    
+                    // Mostrar mensaje de error
+                    showNotification('Error al enviar el mensaje. Inténtalo de nuevo.', 'error');
+                    
+                    // Restaurar botón después de 3 segundos
+                    setTimeout(() => {
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                        submitBtn.style.background = '';
+                    }, 3000);
+                });
+        });
+    }
+    
+    // Función para mostrar notificaciones
+    function showNotification(message, type) {
+        // Crear elemento de notificación
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        // Estilos de la notificación
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        `;
+        
+        // Colores según el tipo
+        if (type === 'success') {
+            notification.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
+        } else {
+            notification.style.background = 'linear-gradient(135deg, #ff6b6b, #ff5252)';
+        }
+        
+        // Agregar al DOM
+        document.body.appendChild(notification);
+        
+        // Animar entrada
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Remover después de 4 segundos
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 4000);
+    }
+})();
+
 // Efecto de zoom en imágenes de proyectos
 document.querySelectorAll('.project-screenshot').forEach(img => {
     img.addEventListener('click', () => {
