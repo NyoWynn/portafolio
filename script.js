@@ -244,7 +244,7 @@ document.addEventListener('mouseleave', () => {
 });
 
 // Efecto de cursor en elementos interactivos
-document.querySelectorAll('a, button, .project-card').forEach(element => {
+document.querySelectorAll('a, button, .project-card, .certification-card').forEach(element => {
     element.addEventListener('mouseenter', () => {
         cursor.style.transform = 'scale(1.5)';
         cursor.style.background = 'rgba(0, 212, 255, 0.8)';
@@ -364,7 +364,7 @@ document.querySelectorAll('.social-link').forEach(link => {
 });
 
 // Smooth reveal para elementos
-const revealElements = document.querySelectorAll('.project-card, .skill-category, .contact-item');
+const revealElements = document.querySelectorAll('.project-card, .skill-category, .contact-item, .certification-card');
 revealElements.forEach(element => {
     element.style.opacity = '0';
     element.style.transform = 'translateY(30px)';
@@ -535,3 +535,87 @@ document.querySelectorAll('.project-screenshot').forEach(img => {
         }, 300);
     });
 });
+
+// Efectos especiales para certificaciones
+document.querySelectorAll('.certification-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+        card.style.transform = 'translateY(-10px) scale(1.02)';
+        
+        // Efecto de brillo en el icono
+        const icon = card.querySelector('.certification-icon');
+        if (icon) {
+            icon.style.boxShadow = '0 0 30px rgba(0, 212, 255, 0.6)';
+        }
+        
+        // Efecto adicional en el logo
+        const logo = card.querySelector('.certification-logo');
+        if (logo) {
+            logo.style.filter = 'brightness(1.2) contrast(1.1)';
+        }
+    });
+    
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'translateY(0) scale(1)';
+        
+        // Restaurar brillo del icono
+        const icon = card.querySelector('.certification-icon');
+        if (icon) {
+            icon.style.boxShadow = '';
+        }
+        
+        // Restaurar efectos del logo
+        const logo = card.querySelector('.certification-logo');
+        if (logo) {
+            logo.style.filter = '';
+        }
+    });
+});
+
+// Animación de entrada escalonada para certificaciones
+const certificationCards = document.querySelectorAll('.certification-card');
+certificationCards.forEach((card, index) => {
+    card.style.animationDelay = `${index * 0.2}s`;
+});
+
+// Efecto de click en botones de certificación
+document.querySelectorAll('.cert-link-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        // Crear efecto de onda
+        const ripple = document.createElement('span');
+        const rect = btn.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        ripple.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            left: ${x}px;
+            top: ${y}px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        `;
+        
+        btn.appendChild(ripple);
+        
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    });
+});
+
+// CSS para efecto ripple
+const rippleStyle = document.createElement('style');
+rippleStyle.textContent = `
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(rippleStyle);
