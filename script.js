@@ -32,14 +32,126 @@ document.querySelectorAll('.nav-link').forEach(link => {
 // Navbar background on scroll
 window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
-    if (window.scrollY > 100) {
-        navbar.style.background = 'rgba(10, 14, 19, 0.98)';
+    if (window.scrollY > 50) {
+        navbar.style.background = 'rgba(13, 13, 13, 0.98)';
     } else {
-        navbar.style.background = 'rgba(10, 14, 19, 0.95)';
+        navbar.style.background = 'rgba(13, 13, 13, 1)';
     }
 });
 
-// Animación de barras de habilidades
+// ========== CARRUSEL DE PROYECTOS ==========
+class ProjectsCarousel {
+    constructor() {
+        this.track = document.querySelector('.projects-carousel-track');
+        this.prevBtn = document.querySelector('.carousel-btn-prev');
+        this.nextBtn = document.querySelector('.carousel-btn-next');
+        this.indicatorsContainer = document.querySelector('.carousel-indicators');
+        this.currentIndex = 0;
+        
+        this.init();
+    }
+    
+    init() {
+        // Obtener todas las tarjetas de proyecto
+        this.cards = Array.from(document.querySelectorAll('.project-card'));
+        this.totalCards = this.cards.length;
+        
+        if (this.totalCards === 0) return;
+        
+        // Crear indicadores
+        this.createIndicators();
+        
+        // Event listeners para botones
+        this.prevBtn.addEventListener('click', () => this.prev());
+        this.nextBtn.addEventListener('click', () => this.next());
+        
+        // Soporte para teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') this.prev();
+            if (e.key === 'ArrowRight') this.next();
+        });
+        
+        // Soporte para touch/swipe en móviles
+        let startX = 0;
+        let endX = 0;
+        
+        this.track.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+        
+        this.track.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            if (startX - endX > 50) this.next();
+            if (endX - startX > 50) this.prev();
+        });
+        
+        // Auto-advance (opcional)
+        // this.startAutoPlay();
+    }
+    
+    createIndicators() {
+        this.indicatorsContainer.innerHTML = '';
+        for (let i = 0; i < this.totalCards; i++) {
+            const indicator = document.createElement('div');
+            indicator.classList.add('indicator');
+            if (i === 0) indicator.classList.add('active');
+            indicator.addEventListener('click', () => this.goTo(i));
+            this.indicatorsContainer.appendChild(indicator);
+        }
+        this.indicators = Array.from(this.indicatorsContainer.querySelectorAll('.indicator'));
+    }
+    
+    updateCarousel() {
+        const offset = -this.currentIndex * 100;
+        this.track.style.transform = `translateX(${offset}%)`;
+        
+        // Actualizar indicadores
+        this.indicators.forEach((indicator, index) => {
+            if (index === this.currentIndex) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        });
+    }
+    
+    next() {
+        this.currentIndex = (this.currentIndex + 1) % this.totalCards;
+        this.updateCarousel();
+    }
+    
+    prev() {
+        this.currentIndex = (this.currentIndex - 1 + this.totalCards) % this.totalCards;
+        this.updateCarousel();
+    }
+    
+    goTo(index) {
+        this.currentIndex = index;
+        this.updateCarousel();
+    }
+    
+    startAutoPlay() {
+        this.autoPlayInterval = setInterval(() => {
+            this.next();
+        }, 5000);
+        
+        // Pausar auto-play al hacer hover
+        this.track.addEventListener('mouseenter', () => {
+            clearInterval(this.autoPlayInterval);
+        });
+        
+        this.track.addEventListener('mouseleave', () => {
+            this.startAutoPlay();
+        });
+    }
+}
+
+// Inicializar carrusel cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+    new ProjectsCarousel();
+});
+
+// ========== ANIMACIONES DE SKILLS ==========
 const animateSkills = () => {
     const skillBars = document.querySelectorAll('.skill-progress');
     skillBars.forEach(bar => {
@@ -50,15 +162,15 @@ const animateSkills = () => {
 
 // Intersection Observer para animaciones
 const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
+    threshold: 0.2,
+    rootMargin: '0px'
 };
 
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             if (entry.target.classList.contains('skills')) {
-                setTimeout(animateSkills, 500);
+                setTimeout(animateSkills, 300);
             }
             entry.target.style.opacity = '1';
             entry.target.style.transform = 'translateY(0)';
@@ -69,345 +181,16 @@ const observer = new IntersectionObserver((entries) => {
 // Observar elementos para animaciones
 document.querySelectorAll('section').forEach(section => {
     section.style.opacity = '0';
-    section.style.transform = 'translateY(50px)';
+    section.style.transform = 'translateY(30px)';
     section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
     observer.observe(section);
 });
 
-// Efecto de partículas en el hero
-const createParticles = () => {
-    const particlesContainer = document.querySelector('.particles');
-    const particleCount = 50;
-    
-    for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.cssText = `
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: rgba(255, 70, 85, 0.5);
-            border-radius: 50%;
-            left: ${Math.random() * 100}%;
-            top: ${Math.random() * 100}%;
-            animation: particleFloat ${5 + Math.random() * 10}s linear infinite;
-        `;
-        particlesContainer.appendChild(particle);
-    }
-};
-
-// CSS para animación de partículas
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes particleFloat {
-        0% {
-            transform: translateY(100vh) rotate(0deg);
-            opacity: 0;
-        }
-        10% {
-            opacity: 1;
-        }
-        90% {
-            opacity: 1;
-        }
-        100% {
-            transform: translateY(-100vh) rotate(360deg);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-
-// Crear partículas cuando se carga la página
-window.addEventListener('load', createParticles);
-
-// Efecto de typing para el título
-const typeWriter = (element, text, speed = 100) => {
-    let i = 0;
-    element.innerHTML = '';
-    
-    const timer = setInterval(() => {
-        if (i < text.length) {
-            element.innerHTML += text.charAt(i);
-            i++;
-        } else {
-            clearInterval(timer);
-        }
-    }, speed);
-};
-
-// Animación de números en las estadísticas
-const animateNumbers = () => {
-    const stats = document.querySelectorAll('.stat-number');
-    stats.forEach(stat => {
-        const target = parseInt(stat.textContent);
-        const increment = target / 50;
-        let current = 0;
-        
-        const timer = setInterval(() => {
-            current += increment;
-            if (current >= target) {
-                stat.textContent = stat.textContent; // Mantener el símbolo ∞
-                clearInterval(timer);
-            } else {
-                stat.textContent = Math.floor(current) + '+';
-            }
-        }, 50);
-    });
-};
-
-// Efecto de hover en las tarjetas de proyecto
-document.querySelectorAll('.project-card').forEach(card => {
-    card.addEventListener('mouseenter', () => {
-        card.style.transform = 'translateY(-10px) scale(1.02)';
-    });
-    
-    card.addEventListener('mouseleave', () => {
-        card.style.transform = 'translateY(0) scale(1)';
-    });
-});
-
-// Formulario de contacto
-const contactForm = document.querySelector('.contact-form form');
-if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        // Simular envío de formulario
-        const submitBtn = contactForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        
-        submitBtn.textContent = 'ENVIANDO...';
-        submitBtn.disabled = true;
-        
-        setTimeout(() => {
-            submitBtn.textContent = 'MENSAJE ENVIADO ✓';
-            submitBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
-            
-            setTimeout(() => {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-                submitBtn.style.background = '';
-                contactForm.reset();
-            }, 2000);
-        }, 1500);
-    });
-}
-
-// Efecto de parallax suave
-window.addEventListener('scroll', () => {
-    const scrolled = window.pageYOffset;
-    const parallaxElements = document.querySelectorAll('.hero-background');
-    
-    parallaxElements.forEach(element => {
-        const speed = 0.5;
-        element.style.transform = `translateY(${scrolled * speed}px)`;
-    });
-    
-    // Parallax sutil para las imágenes de proyectos
-    const projectImages = document.querySelectorAll('.project-screenshot');
-    projectImages.forEach(image => {
-        const rect = image.getBoundingClientRect();
-        const speed = 0.1;
-        if (rect.top < window.innerHeight && rect.bottom > 0) {
-            const yPos = -(rect.top - window.innerHeight) * speed;
-            image.style.transform = `translateY(${yPos}px) scale(1.05)`;
-        }
-    });
-});
-
-// Efecto de cursor personalizado
-const cursor = document.createElement('div');
-cursor.className = 'custom-cursor';
-cursor.style.cssText = `
-    position: fixed;
-    width: 20px;
-    height: 20px;
-    background: rgba(255, 70, 85, 0.8);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9999;
-    transition: transform 0.1s ease;
-    display: none;
-`;
-
-document.body.appendChild(cursor);
-
-document.addEventListener('mousemove', (e) => {
-    cursor.style.left = e.clientX - 10 + 'px';
-    cursor.style.top = e.clientY - 10 + 'px';
-    cursor.style.display = 'block';
-});
-
-document.addEventListener('mouseleave', () => {
-    cursor.style.display = 'none';
-});
-
-// Efecto de cursor en elementos interactivos
-document.querySelectorAll('a, button, .project-card, .certification-card').forEach(element => {
-    element.addEventListener('mouseenter', () => {
-        cursor.style.transform = 'scale(1.5)';
-        cursor.style.background = 'rgba(0, 212, 255, 0.8)';
-    });
-    
-    element.addEventListener('mouseleave', () => {
-        cursor.style.transform = 'scale(1)';
-        cursor.style.background = 'rgba(255, 70, 85, 0.8)';
-    });
-});
-
-// Animación de carga inicial
-window.addEventListener('load', () => {
-    document.body.style.opacity = '0';
-    document.body.style.transition = 'opacity 0.5s ease';
-    
-    setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
-});
-
-// Efecto de resplandor en el logo
-const logo = document.querySelector('.logo-text');
-if (logo) {
-    setInterval(() => {
-        logo.style.textShadow = '0 0 20px rgba(255, 70, 85, 0.8)';
-        setTimeout(() => {
-            logo.style.textShadow = 'none';
-        }, 1000);
-    }, 3000);
-}
-
-// Preloader
-const preloader = document.createElement('div');
-preloader.className = 'preloader';
-preloader.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--background-dark);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-    transition: opacity 0.5s ease;
-`;
-
-const loader = document.createElement('div');
-loader.style.cssText = `
-    width: 50px;
-    height: 50px;
-    border: 3px solid rgba(255, 70, 85, 0.3);
-    border-top: 3px solid var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-`;
-
-preloader.appendChild(loader);
-document.body.appendChild(preloader);
-
-const spinStyle = document.createElement('style');
-spinStyle.textContent = `
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-`;
-document.head.appendChild(spinStyle);
-
-// Remover preloader cuando la página esté cargada
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        preloader.style.opacity = '0';
-        setTimeout(() => {
-            preloader.remove();
-        }, 500);
-    }, 1000);
-});
-
-// Efecto de escritura en el subtítulo del hero
-const heroSubtitle = document.querySelector('.hero-subtitle');
-if (heroSubtitle) {
-    const originalText = heroSubtitle.textContent;
-    heroSubtitle.textContent = '';
-    
-    setTimeout(() => {
-        typeWriter(heroSubtitle, originalText, 150);
-    }, 1000);
-}
-
-// Animación de las estadísticas cuando son visibles
-const statsObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            animateNumbers();
-            statsObserver.unobserve(entry.target);
-        }
-    });
-}, { threshold: 0.5 });
-
-const heroStats = document.querySelector('.hero-stats');
-if (heroStats) {
-    statsObserver.observe(heroStats);
-}
-
-// Efecto de hover en los enlaces sociales
-document.querySelectorAll('.social-link').forEach(link => {
-    link.addEventListener('mouseenter', () => {
-        link.style.transform = 'translateY(-3px) rotate(5deg)';
-    });
-    
-    link.addEventListener('mouseleave', () => {
-        link.style.transform = 'translateY(0) rotate(0deg)';
-    });
-});
-
-// Smooth reveal para elementos
-const revealElements = document.querySelectorAll('.project-card, .skill-category, .contact-item, .certification-card');
-revealElements.forEach(element => {
-    element.style.opacity = '0';
-    element.style.transform = 'translateY(30px)';
-    element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-});
-
-const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-        }
-    });
-}, { threshold: 0.1 });
-
-revealElements.forEach(element => {
-    revealObserver.observe(element);
-});
-
-// Carga progresiva de imágenes
-const loadImages = () => {
-    const images = document.querySelectorAll('img');
-    images.forEach(img => {
-        img.addEventListener('load', () => {
-            img.style.opacity = '1';
-        });
-        
-        img.addEventListener('error', () => {
-            console.log('Error cargando imagen:', img.src);
-            img.style.display = 'none';
-        });
-    });
-};
-
-// Inicializar carga de imágenes
-window.addEventListener('load', loadImages);
-
-// Configuración de EmailJS
+// ========== FORMULARIO DE CONTACTO CON EMAILJS ==========
 (function() {
     // Inicializar EmailJS con tu Public Key
     emailjs.init("itQESBmnv3bpuxLv1");
     
-    // Configurar el formulario de contacto
     const contactForm = document.getElementById('contact-form');
     
     if (contactForm) {
@@ -441,13 +224,13 @@ window.addEventListener('load', loadImages);
                     
                     // Éxito
                     submitBtn.textContent = 'MENSAJE ENVIADO ✓';
-                    submitBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
+                    submitBtn.style.background = '#00ff88';
                     submitBtn.style.opacity = '1';
                     
                     // Limpiar formulario
                     contactForm.reset();
                     
-                    // Mostrar mensaje de éxito
+                    // Mostrar notificación
                     showNotification('¡Mensaje enviado exitosamente! Te contactaré pronto.', 'success');
                     
                     // Restaurar botón después de 3 segundos
@@ -462,10 +245,10 @@ window.addEventListener('load', loadImages);
                     
                     // Error
                     submitBtn.textContent = 'ERROR AL ENVIAR';
-                    submitBtn.style.background = 'linear-gradient(135deg, #ff6b6b, #ff5252)';
+                    submitBtn.style.background = '#ff6b6b';
                     submitBtn.style.opacity = '1';
                     
-                    // Mostrar mensaje de error
+                    // Mostrar notificación
                     showNotification('Error al enviar el mensaje. Inténtalo de nuevo.', 'error');
                     
                     // Restaurar botón después de 3 segundos
@@ -480,12 +263,10 @@ window.addEventListener('load', loadImages);
     
     // Función para mostrar notificaciones
     function showNotification(message, type) {
-        // Crear elemento de notificación
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.textContent = message;
         
-        // Estilos de la notificación
         notification.style.cssText = `
             position: fixed;
             top: 20px;
@@ -495,30 +276,27 @@ window.addEventListener('load', loadImages);
             color: white;
             font-weight: 500;
             z-index: 10000;
-            transform: translateX(100%);
+            transform: translateX(400px);
             transition: transform 0.3s ease;
             max-width: 300px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         `;
         
-        // Colores según el tipo
         if (type === 'success') {
-            notification.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
+            notification.style.background = '#00ff88';
+            notification.style.color = '#000';
         } else {
-            notification.style.background = 'linear-gradient(135deg, #ff6b6b, #ff5252)';
+            notification.style.background = '#ff6b6b';
         }
         
-        // Agregar al DOM
         document.body.appendChild(notification);
         
-        // Animar entrada
         setTimeout(() => {
             notification.style.transform = 'translateX(0)';
         }, 100);
         
-        // Remover después de 4 segundos
         setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
+            notification.style.transform = 'translateX(400px)';
             setTimeout(() => {
                 document.body.removeChild(notification);
             }, 300);
@@ -526,96 +304,48 @@ window.addEventListener('load', loadImages);
     }
 })();
 
-// Efecto de zoom en imágenes de proyectos
-document.querySelectorAll('.project-screenshot').forEach(img => {
-    img.addEventListener('click', () => {
-        img.style.transform = 'scale(1.1)';
-        setTimeout(() => {
-            img.style.transform = 'scale(1)';
-        }, 300);
-    });
+// ========== ANIMACIÓN SUAVE PARA ELEMENTOS ==========
+const revealElements = document.querySelectorAll('.project-card, .skill-category, .certification-card');
+revealElements.forEach(element => {
+    element.style.opacity = '0';
+    element.style.transform = 'translateY(20px)';
+    element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
 });
 
-// Efectos especiales para certificaciones
-document.querySelectorAll('.certification-card').forEach(card => {
-    card.addEventListener('mouseenter', () => {
-        card.style.transform = 'translateY(-10px) scale(1.02)';
-        
-        // Efecto de brillo en el icono
-        const icon = card.querySelector('.certification-icon');
-        if (icon) {
-            icon.style.boxShadow = '0 0 30px rgba(0, 212, 255, 0.6)';
-        }
-        
-        // Efecto adicional en el logo
-        const logo = card.querySelector('.certification-logo');
-        if (logo) {
-            logo.style.filter = 'brightness(1.2) contrast(1.1)';
+const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
         }
     });
-    
-    card.addEventListener('mouseleave', () => {
-        card.style.transform = 'translateY(0) scale(1)';
+}, { threshold: 0.1 });
+
+revealElements.forEach(element => {
+    revealObserver.observe(element);
+});
+
+// ========== CARGA DE IMÁGENES ==========
+const loadImages = () => {
+    const images = document.querySelectorAll('img');
+    images.forEach(img => {
+        img.addEventListener('load', () => {
+            img.style.opacity = '1';
+        });
         
-        // Restaurar brillo del icono
-        const icon = card.querySelector('.certification-icon');
-        if (icon) {
-            icon.style.boxShadow = '';
-        }
-        
-        // Restaurar efectos del logo
-        const logo = card.querySelector('.certification-logo');
-        if (logo) {
-            logo.style.filter = '';
-        }
+        img.addEventListener('error', () => {
+            console.log('Error cargando imagen:', img.src);
+        });
     });
-});
+};
 
-// Animación de entrada escalonada para certificaciones
-const certificationCards = document.querySelectorAll('.certification-card');
-certificationCards.forEach((card, index) => {
-    card.style.animationDelay = `${index * 0.2}s`;
-});
+window.addEventListener('load', loadImages);
 
-// Efecto de click en botones de certificación
-document.querySelectorAll('.cert-link-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        // Crear efecto de onda
-        const ripple = document.createElement('span');
-        const rect = btn.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height);
-        const x = e.clientX - rect.left - size / 2;
-        const y = e.clientY - rect.top - size / 2;
-        
-        ripple.style.cssText = `
-            position: absolute;
-            width: ${size}px;
-            height: ${size}px;
-            left: ${x}px;
-            top: ${y}px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            transform: scale(0);
-            animation: ripple 0.6s linear;
-            pointer-events: none;
-        `;
-        
-        btn.appendChild(ripple);
-        
-        setTimeout(() => {
-            ripple.remove();
-        }, 600);
-    });
+// ========== PRELOADER SIMPLE ==========
+window.addEventListener('load', () => {
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+        document.body.style.transition = 'opacity 0.5s ease';
+        document.body.style.opacity = '1';
+    }, 100);
 });
-
-// CSS para efecto ripple
-const rippleStyle = document.createElement('style');
-rippleStyle.textContent = `
-    @keyframes ripple {
-        to {
-            transform: scale(4);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(rippleStyle);
