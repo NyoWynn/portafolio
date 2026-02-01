@@ -52,6 +52,13 @@ body {
     align-items: center;
 }
 
+.nav-logo-img {
+    height: 2.5rem;
+    width: auto;
+    display: block;
+    object-fit: contain;
+}
+
 .nav-logo .logo-text {
     font-size: 1.2rem;
     font-weight: 700;
